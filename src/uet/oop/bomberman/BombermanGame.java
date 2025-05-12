@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.stage.Stage;
+import uet.oop.bomberman.entities.Bomb.Bomb;
 import uet.oop.bomberman.entities.Bomber;
 import uet.oop.bomberman.entities.Entity;
 import uet.oop.bomberman.entities.Grass;
@@ -21,13 +22,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BombermanGame extends Application {
-    
+
     public static final int WIDTH = 30;
     public static final int HEIGHT = 20;
     private GraphicsContext gc;
     private Canvas canvas;
     private List<Entity> entities = new ArrayList<>();
     private List<Entity> stillObjects = new ArrayList<>();
+
+    private List<Bomb> bombsAdd = new ArrayList<>(); //List trung gian
+    private List<Entity> toRemove = new ArrayList<>();
+
+    //Thêm bomb qua list trung gian để tránh lỗi
+    public void addNewBomb(Bomb newBomb) {
+        bombsAdd.add(newBomb);
+    }
+
+    //List de xoa
+    public void markForRemoval(Entity entity) {
+        toRemove.add(entity);
+    }
+
+    public List<Entity> getEntities() {
+        return entities;
+    }
 
     public List<Entity> getStillObjects() {
         return stillObjects;
@@ -93,8 +111,8 @@ public class BombermanGame extends Application {
                         case '#':
                             object = new Wall(i, j, Sprite.wall.getFxImage());
                             break;
-                        case 'B':
-                            object = new Brick(i, j, Sprite.brick.getFxImage());
+                        case '*':
+                            object = new Brick(i, j, Sprite.brick.getFxImage(), this);
                             break;
                         default:
                             object = new Grass(i, j, Sprite.grass.getFxImage());
@@ -112,12 +130,45 @@ public class BombermanGame extends Application {
     }
 
     public void update() {
-        entities.forEach(Entity::update);
+        List<Entity> stillObjectsCopy = new ArrayList<>(stillObjects);
+        for (Entity obj : stillObjectsCopy) {
+            obj.update();
+        }
+        stillObjects.removeAll(toRemove);
+        toRemove.clear();
+
+        for (Entity obj : stillObjects) {
+            obj.update();
+        }
+        // Tạo bản sao của entities để lặp
+        List<Entity> entitiesToUpdate = new ArrayList<>(entities);
+        // Tạo danh sách tạm cho các thực thể cần thêm
+        List<Entity> entitiesToAdd = new ArrayList<>(bombsAdd);
+        bombsAdd.clear();
+
+        // Cập nhật tất cả thực thể
+        for (Entity entity : entitiesToUpdate) {
+            entity.update();
+        }
+
+        // Thêm các thực thể mới
+        entities.addAll(entitiesToAdd);
+
+        // Xóa các bom đã đánh dấu isRemoved
+        entities.removeIf(entity -> entity instanceof Bomb && ((Bomb) entity).isRemoved());
     }
 
     public void render() {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         stillObjects.forEach(g -> g.render(gc));
         entities.forEach(g -> g.render(gc));
+    }
+
+    //Xu ly enemy chet hoac pha brick tao ra portal va itemddd
+    public void replaceEntity(Entity oldEntity, Entity newEntity) {
+        int index = stillObjects.indexOf(oldEntity);
+        if (index != -1) {
+            stillObjects.set(index, newEntity);
+        }
     }
 }

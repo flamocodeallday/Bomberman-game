@@ -4,7 +4,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.KeyCode;
 
 public class Input {
-    private boolean up, down ,left , right;
+    private boolean up, down ,left , right, spacePressed, spaceJustPressed;
 
     public void handlePressed(KeyEvent event) {
         switch (event.getCode()) {
@@ -19,6 +19,12 @@ public class Input {
                 break;
             case A:
                 left = true;
+                break;
+            case SPACE:
+                if (!spacePressed) {
+                    spacePressed = true;
+                    spaceJustPressed = true;
+                }
                 break;
         }
     }
@@ -37,6 +43,11 @@ public class Input {
             case A:
                 left = false;
                 break;
+            case SPACE:
+                spacePressed = false;
+                spaceJustPressed = false;
+                break;
+
         }
     }
 
@@ -44,5 +55,10 @@ public class Input {
     public boolean isDown() { return down; }
     public boolean isLeft() { return left; }
     public boolean isRight() { return right; }
+    public boolean isSpaceJustPressed() {
+        boolean result = spaceJustPressed;
+        spaceJustPressed = false; // Reset sau khi gọi
+        return result;
+    }
 
 }

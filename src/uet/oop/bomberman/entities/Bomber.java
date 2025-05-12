@@ -1,23 +1,28 @@
 package uet.oop.bomberman.entities;
 
-import javafx.scene.SnapshotParameters;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.paint.Color;
 import uet.oop.bomberman.BombermanGame;
 import uet.oop.bomberman.Input;
+import uet.oop.bomberman.entities.Bomb.Bomb;
+import uet.oop.bomberman.entities.Item.Item;
 import uet.oop.bomberman.graphics.Sprite;
 
-import java.util.List;
+import javafx.geometry.Rectangle2D;
 
 public class Bomber extends Entity {
     private Input input;
-    private double speed = 1.0;
+    private double speed = 1.5;
     private double realX, realY;
     private int animate = 0;
     private final int MAX_ANIMATE = 7500;
     private BombermanGame game;
+    private int maxBombs = 1;
+    protected int bombPlaced = 0;
+    private Bomb pendingBomb;
+    private long bombPlaceTime = -1; // nanoTime
+    private final long BOMB_APPEAR_DELAY_NS = 200_000_000L; // 200ms
+    private boolean hasLeftTile = false;
+    private int flameLength = 1;
 
     public Bomber(int x, int y, Image img, Input input, BombermanGame game) {
         super(x, y, img);
@@ -31,9 +36,37 @@ public class Bomber extends Entity {
     public void update() {
         animate();
         move();
-        // Cập nhật lại toạ độ int để render
         this.x = (int) realX;
         this.y = (int) realY;
+
+        if (input.isSpaceJustPressed() && canPlaceBomb()) {
+            placeBomb();
+        }
+
+        // Xử lý bomb trì hoãn
+        if (pendingBomb != null) {
+            if (!hasLeftTile && hasLeftBombTile()) {
+                hasLeftTile = true;
+                bombPlaceTime = System.nanoTime();
+            }
+
+            if (hasLeftTile && System.nanoTime() - bombPlaceTime >= BOMB_APPEAR_DELAY_NS) {
+                game.getEntities().add(pendingBomb);
+                pendingBomb = null;
+                bombPlaceTime = -1;
+                hasLeftTile = false;
+            }
+        }
+
+        checkItemCollision();
+    }
+
+    private boolean hasLeftBombTile() {
+        int bomberUnitX = (int) Math.floor((realX + Sprite.SCALED_SIZE / 2) / Sprite.SCALED_SIZE);
+        int bomberUnitY = (int) Math.floor((realY + Sprite.SCALED_SIZE / 2) / Sprite.SCALED_SIZE);
+        int bombUnitX = pendingBomb.getX() / Sprite.SCALED_SIZE;
+        int bombUnitY = pendingBomb.getY() / Sprite.SCALED_SIZE;
+        return bomberUnitX != bombUnitX || bomberUnitY != bombUnitY;
     }
 
     private void move() {
@@ -63,34 +96,127 @@ public class Bomber extends Entity {
 
     public boolean canMove(double newX, double newY) {
         int size = Sprite.SCALED_SIZE;
-
-        // Tạo buffer nhỏ để thu nhỏ hitbox, giúp tránh kẹt khi đi gần tường
-        int buffer = 6;  // có thể điều chỉnh
+        int buffer = 6;
 
         double left = newX + buffer;
         double right = newX + size - buffer - 1;
         double top = newY + buffer;
         double bottom = newY + size - buffer - 1;
 
-        for (Entity entity : game.getStillObjects()) {
-            if (entity instanceof Wall) {
-                int wallX = entity.getX();
-                int wallY = entity.getY();
+        int[][] checkUnit = {
+                {(int) (left / size), (int) (top / size)},
+                {(int) (right / size), (int) (top / size)},
+                {(int) (left / size), (int) (bottom / size)},
+                {(int) (right / size), (int) (bottom / size)},
+        };
 
-                // Tọa độ góc của wall
-                double wallLeft = wallX;
-                double wallRight = wallX + size - 1;
-                double wallTop = wallY;
-                double wallBottom = wallY + size - 1;
+        for (int[] unit : checkUnit) {
+            int checkX = unit[0];
+            int checkY = unit[1];
 
-                // Kiểm tra va chạm hình chữ nhật
-                if (!(right < wallLeft || left > wallRight || bottom < wallTop || top > wallBottom)) {
-                    return false;  // Có va chạm với Wall
+            if (checkX < 0 || checkX >= BombermanGame.WIDTH || checkY < 0 || checkY >= BombermanGame.HEIGHT) {
+                return false;
+            }
+
+            for (Entity entity : game.getStillObjects()) {
+                int entityX = entity.getX() / size;
+                int entityY = entity.getY() / size;
+
+                if (entityX == checkX && entityY == checkY &&
+                        (entity instanceof Wall || entity instanceof Brick)) {
+
+                    double entityLeft = entity.getX();
+                    double entityRight = entity.getX() + size - 1;
+                    double entityTop = entity.getY();
+                    double entityBottom = entity.getY() + size - 1;
+
+                    if (!(right < entityLeft || left > entityRight || bottom < entityTop || top > entityBottom)) {
+                        return false;
+                    }
+                }
+            }
+
+            for (Entity entity : game.getEntities()) {
+                if (entity instanceof Bomb && !((Bomb) entity).isRemoved()) {
+                    int bombX = entity.getX() / size;
+                    int bombY = entity.getY() / size;
+                    if (bombX == checkX && bombY == checkY) {
+                        double bombLeft = entity.getX();
+                        double bombRight = entity.getX() + size - 1;
+                        double bombTop = entity.getY();
+                        double bombBottom = entity.getY() + size - 1;
+
+                        if (!(right < bombLeft || left > bombRight || bottom < bombTop || top > bombBottom)) {
+                            return false;
+                        }
+                    }
                 }
             }
         }
+        return true;
+    }
 
-        return true;  // Không có va chạm
+
+
+    public boolean canPlaceBomb() {
+        return bombPlaced < maxBombs && pendingBomb == null;
+    }
+
+    public void placeBomb() {
+        if (canPlaceBomb()) {
+            int bombX = (int) Math.floor((realX + Sprite.SCALED_SIZE / 2) / Sprite.SCALED_SIZE);
+            int bombY = (int) Math.floor((realY + Sprite.SCALED_SIZE / 2) / Sprite.SCALED_SIZE);
+            pendingBomb = new Bomb(bombX, bombY, flameLength, game);
+            bombPlaced++;
+            hasLeftTile = false;
+            bombPlaceTime = -1;
+        }
+    }
+
+    public void bombExploded() {
+        if (bombPlaced > 0) {
+            bombPlaced--;
+        }
+        if (pendingBomb != null && pendingBomb.isRemoved()) {
+            pendingBomb = null;
+            bombPlaceTime = -1;
+            hasLeftTile = false;
+        }
+    }
+
+    private void checkItemCollision() {
+        Rectangle2D bounds = this.getBoundary();
+
+        for(Entity entity : game.getStillObjects()) {
+            if (entity instanceof Item) {
+                Rectangle2D itemBounds = ((Item) entity).getBoundary();
+
+                if (bounds.intersects(itemBounds)) {
+                    Item powerUp = (Item) entity;
+                    powerUp.applyEffect(this); // áp dụng hiệu ứng (ví dụ tăng bomb)
+                    game.getStillObjects().remove(entity);
+                    break;
+                }
+            }
+        }
+    }
+
+    public void increaseBombPlace() {
+        if(maxBombs < 2) {
+            maxBombs += 1;
+        }
+    }
+
+    public void increaseFlameLength() {
+        if(flameLength < 2) {
+            flameLength += 1;
+        }
+    }
+
+    public void increaseSpeed() {
+        if(speed <= 3) {
+            speed += 1;
+        }
     }
 
     private void animate() {
@@ -98,4 +224,3 @@ public class Bomber extends Entity {
         else animate = 0;
     }
 }
-
