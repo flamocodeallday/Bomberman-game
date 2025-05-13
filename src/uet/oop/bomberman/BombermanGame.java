@@ -80,7 +80,7 @@ public class BombermanGame extends Application {
     public void createMap() {
         try {
             // Đọc tệp map.txt
-            BufferedReader reader = new BufferedReader(new FileReader("D://Code//Bombermannn_Project//res//levels//Level1.txt"));
+            BufferedReader reader = new BufferedReader(new FileReader("C://Users//admin//Downloads//Bomberman-game//res//levels//level1.txt"));
             String line;
             int j = 0;
 
