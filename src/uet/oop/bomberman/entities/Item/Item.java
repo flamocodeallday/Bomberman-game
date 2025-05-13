@@ -1,9 +1,10 @@
 package uet.oop.bomberman.entities.Item;
 
 import javafx.scene.canvas.GraphicsContext;
-import uet.oop.bomberman.BombermanGame;
-import uet.oop.bomberman.entities.Bomber;
-import uet.oop.bomberman.entities.Entity;
+import uet.oop.bomberman.GameEngine.BombermanGame;
+import uet.oop.bomberman.GameEngine.GameManager;
+import uet.oop.bomberman.entities.World.Bomber;
+import uet.oop.bomberman.entities.World.Entity;
 import javafx.scene.image.Image;
 import uet.oop.bomberman.graphics.Sprite;
 
@@ -11,7 +12,7 @@ public abstract class Item extends Entity {
     protected boolean isActive = true;
     private static final int TIME_LIMIT = 5000; // Thời gian tồn tại của item (5 giây)
     private long startTime;  // Thời điểm item được nhặt
-    private BombermanGame game;
+    private GameManager game;
 
     public Item(int x, int y, Image image) {
         super(x / Sprite.SCALED_SIZE, y / Sprite.SCALED_SIZE, image);

@@ -1,11 +1,10 @@
 package uet.oop.bomberman.entities.Bomb;
 
-import uet.oop.bomberman.entities.Entity;
-import uet.oop.bomberman.BombermanGame;
-import uet.oop.bomberman.entities.Entity;
+import uet.oop.bomberman.GameEngine.GameManager;
+import uet.oop.bomberman.entities.World.Entity;
+import uet.oop.bomberman.GameEngine.BombermanGame;
 import uet.oop.bomberman.graphics.Sprite;
-import uet.oop.bomberman.entities.Bomber;
-import javafx.scene.image.Image;
+import uet.oop.bomberman.entities.World.Bomber;
 import javafx.scene.canvas.GraphicsContext;
 
 
@@ -16,10 +15,10 @@ public class Bomb extends Entity {
     private int power;
     private boolean isRemoved = false; // Thêm thuộc tính để đánh dấu xóa
 
-    private BombermanGame game;
+    private GameManager game;
     private int animate = 0;
 
-    public Bomb(int xUnit, int yUnit, int power, BombermanGame game) {
+    public Bomb(int xUnit, int yUnit, int power, GameManager game) {
         super(xUnit, yUnit, Sprite.bomb.getFxImage());
         this.game = game;
         this.power = power;

@@ -1,10 +1,7 @@
-package uet.oop.bomberman.entities;
+package uet.oop.bomberman.entities.World;
 
-import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.paint.Color;
 import uet.oop.bomberman.graphics.Sprite;
 
 import javafx.geometry.Rectangle2D;

@@ -1,7 +1,8 @@
-package uet.oop.bomberman.entities;
+package uet.oop.bomberman.entities.World;
 
 import javafx.scene.image.Image;
-import uet.oop.bomberman.BombermanGame;
+import uet.oop.bomberman.GameEngine.BombermanGame;
+import uet.oop.bomberman.GameEngine.GameManager;
 import uet.oop.bomberman.entities.Item.BombItem;
 import uet.oop.bomberman.entities.Item.FlameItem;
 import uet.oop.bomberman.entities.Item.Item;
@@ -14,9 +15,9 @@ import java.util.Random;
 public class Brick extends Entity {
     private boolean destroyed = false;
     private int destroyAnimationCount = 30;
-    private BombermanGame game; // Thêm tham chiếu đến game
+    private GameManager game; // Thêm tham chiếu đến game
 
-    public Brick(int x, int y, Image img, BombermanGame game) {
+    public Brick(int x, int y, Image img, GameManager game) {
         super(x, y, img);
         this.game = game; // Lưu tham chiếu
     }

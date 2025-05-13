@@ -1,12 +1,12 @@
 package uet.oop.bomberman.entities.Bomb;
 
 import javafx.scene.canvas.GraphicsContext;
-import uet.oop.bomberman.BombermanGame;
-import uet.oop.bomberman.entities.Brick;
-import uet.oop.bomberman.entities.Entity;
-import uet.oop.bomberman.entities.Wall;
+import uet.oop.bomberman.GameEngine.BombermanGame;
+import uet.oop.bomberman.GameEngine.GameManager;
+import uet.oop.bomberman.entities.World.Brick;
+import uet.oop.bomberman.entities.World.Entity;
+import uet.oop.bomberman.entities.World.Wall;
 import uet.oop.bomberman.graphics.Sprite;
-import javafx.scene.image.Image;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +20,9 @@ public class Flame extends Entity {
     private int timeToLive = 30;
     private boolean isRemoved = false;
     private static final int FLAME_LIFETIME = 30;
-    private BombermanGame game;
+    private GameManager game;
 
-    public Flame(int xUnit, int yUnit, int direction, int length, BombermanGame game) {
+    public Flame(int xUnit, int yUnit, int direction, int length, GameManager game) {
         super(xUnit, yUnit, null);
         this.gridX = xUnit;
         this.gridY = yUnit;

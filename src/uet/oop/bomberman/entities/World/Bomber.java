@@ -1,7 +1,8 @@
-package uet.oop.bomberman.entities;
+package uet.oop.bomberman.entities.World;
 
 import javafx.scene.image.Image;
-import uet.oop.bomberman.BombermanGame;
+import uet.oop.bomberman.GameEngine.BombermanGame;
+import uet.oop.bomberman.GameEngine.GameManager;
 import uet.oop.bomberman.Input;
 import uet.oop.bomberman.entities.Bomb.Bomb;
 import uet.oop.bomberman.entities.Item.Item;
@@ -15,7 +16,7 @@ public class Bomber extends Entity {
     private double realX, realY;
     private int animate = 0;
     private final int MAX_ANIMATE = 7500;
-    private BombermanGame game;
+    private GameManager game;
     private int maxBombs = 1;
     protected int bombPlaced = 0;
     private Bomb pendingBomb;
@@ -24,7 +25,7 @@ public class Bomber extends Entity {
     private boolean hasLeftTile = false;
     private int flameLength = 1;
 
-    public Bomber(int x, int y, Image img, Input input, BombermanGame game) {
+    public Bomber(int x, int y, Image img, Input input, GameManager game) {
         super(x, y, img);
         this.input = input;
         this.game = game;
