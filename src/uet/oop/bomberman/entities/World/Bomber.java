@@ -12,7 +12,7 @@ import javafx.geometry.Rectangle2D;
 
 public class Bomber extends Entity {
     private Input input;
-    private double speed = 1.5;
+    private double speed = 1;
     private double realX, realY;
     private int animate = 0;
     private final int MAX_ANIMATE = 7500;
@@ -156,8 +156,6 @@ public class Bomber extends Entity {
         }
         return true;
     }
-
-
 
     public boolean canPlaceBomb() {
         return bombPlaced < maxBombs && pendingBomb == null;
