@@ -7,6 +7,8 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.stage.Stage;
 import uet.oop.bomberman.Input;
 import uet.oop.bomberman.entities.Bomb.Bomb;
+import uet.oop.bomberman.entities.Enemy.Balloon;
+import uet.oop.bomberman.entities.Enemy.Oneal;
 import uet.oop.bomberman.entities.World.*;
 import uet.oop.bomberman.graphics.Sprite;
 
@@ -71,45 +73,47 @@ public class GameManager {
         createMap();
         Entity bomberman = new Bomber(1, 1, Sprite.player_right.getFxImage(), input, this);
         entities.add(bomberman);
-
-
     }
 
+    public void createMap() {
+        try {
+            // Adjust the file path to match your system
+            BufferedReader reader = new BufferedReader(new FileReader("C://Users//admin//Downloads//Bomberman-game//res//levels//level1.txt"));
+            String line;
+            int j = 0;
 
-        public void createMap() {
-            try {
-                // Đọc tệp map.txt - chỉnh đường dẫn theo hệ thống của bạn nếu cần
-                BufferedReader reader = new BufferedReader(new FileReader("C://Users//admin//Downloads//Bomberman-game//res//levels//level1.txt"));
-                String line;
-                int j = 0;
+            while ((line = reader.readLine()) != null) {
+                for (int i = 0; i < line.length(); i++) {
+                    char c = line.charAt(i);
 
-                while ((line = reader.readLine()) != null) {
-                    for (int i = 0; i < line.length(); i++) {
-                        char c = line.charAt(i);
-                        Entity object;
+                    // Luôn thêm nền Grass trước
+                    stillObjects.add(new Grass(i, j, Sprite.grass.getFxImage()));
 
-                        switch (c) {
-                            case '#':
-                                object = new Wall(i, j, Sprite.wall.getFxImage());
-                                break;
-                            case '*':
-                                object = new Brick(i, j, Sprite.brick.getFxImage(), this);
-                                break;
-                            default:
-                                object = new Grass(i, j, Sprite.grass.getFxImage());
-                                break;
-                        }
-
-                        stillObjects.add(object);
+                    switch (c) {
+                        case '#':
+                            stillObjects.add(new Wall(i, j, Sprite.wall.getFxImage()));
+                            break;
+                        case '*':
+                            stillObjects.add(new Brick(i, j, Sprite.brick.getFxImage(), this));
+                            break;
+                        case '1':
+                            entities.add(new Balloon(i, j, Sprite.balloom_left1.getFxImage(), this));
+                            break;
+                        // Uncomment if you want to add Oneal enemies
+                        // case '2':
+                        //     entities.add(new Oneal(i, j, Sprite.oneal_left1.getFxImage(), this));
+                        //     break;
+                        // Các ký tự khác chỉ cần Grass (đã được thêm ở trên)
                     }
-                    j++;
                 }
-                reader.close(); // Đóng tệp sau khi đọc xong
-
-            } catch (IOException e) {
-                e.printStackTrace();
+                j++;
             }
+            reader.close(); // Đóng tệp sau khi đọc xong
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
 
     public void update() {
         List<Entity> stillObjectsCopy = new ArrayList<>(stillObjects);
