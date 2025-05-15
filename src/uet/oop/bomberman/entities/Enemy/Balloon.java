@@ -1,27 +1,25 @@
 package uet.oop.bomberman.entities.Enemy;
 
 import javafx.scene.image.Image;
+import uet.oop.bomberman.GameEngine.GameManager;
 import uet.oop.bomberman.entities.World.Bomber;
 import uet.oop.bomberman.entities.World.Brick;
 import uet.oop.bomberman.entities.World.Entity;
 import uet.oop.bomberman.entities.World.Wall;
 import uet.oop.bomberman.graphics.Sprite;
-import uet.oop.bomberman.GameEngine.GameManager;
 
 import java.util.Random;
 
-public class Balloon extends Entity {
-    private final int speed = 1;
+import static uet.oop.bomberman.GameEngine.BombermanGame.HEIGHT;
+import static uet.oop.bomberman.GameEngine.BombermanGame.WIDTH;
+
+public class Balloon extends Enemy {
     private String direction;
     private final Random random = new Random();
-    private int stuckCounter = 0;
-    private static final int MAX_STUCK_FRAMES = 60;
-    private GameManager game;
 
-    public Balloon(int x, int y, Image img, GameManager game) {
-        super(x, y, img);
+    public Balloon(int x, int y, Image img, GameManager gameManager) {
+        super(x, y, img, gameManager);
         setRandomDirection();
-        this.game = game;
     }
 
     private void setRandomDirection() {
@@ -31,51 +29,65 @@ public class Balloon extends Entity {
 
     @Override
     public void update() {
+        // Ensure movement stays within map boundaries
         int newX = x;
         int newY = y;
-        boolean moved = false;
 
+        // Check map boundaries and calculate new position
         switch (direction) {
             case "UP":
-                newY -= speed;
-                img = Sprite.movingSprite(Sprite.balloom_left1, Sprite.balloom_left2, Sprite.balloom_left3, (int) System.currentTimeMillis() / 100, 20).getFxImage();
+                if (y - speed >= 0) {
+                    newY -= speed;
+                    changeImage(Sprite.movingSprite(Sprite.balloom_left1, Sprite.balloom_left2, Sprite.balloom_left3, (int) System.currentTimeMillis() / 100, 20).getFxImage());
+                } else {
+                    setRandomDirection(); // Immediately change direction if hitting map boundary
+                }
                 break;
             case "DOWN":
-                newY += speed;
-                img = Sprite.movingSprite(Sprite.balloom_right1, Sprite.balloom_right2, Sprite.balloom_right3, (int) System.currentTimeMillis() / 100, 20).getFxImage();
+                if (y + speed < HEIGHT * Sprite.SCALED_SIZE) {
+                    newY += speed;
+                    changeImage(Sprite.movingSprite(Sprite.balloom_right1, Sprite.balloom_right2, Sprite.balloom_right3, (int) System.currentTimeMillis() / 100, 20).getFxImage());
+                } else {
+                    setRandomDirection(); // Immediately change direction if hitting map boundary
+                }
                 break;
             case "LEFT":
-                newX -= speed;
-                img = Sprite.movingSprite(Sprite.balloom_left1, Sprite.balloom_left2, Sprite.balloom_left3, (int) System.currentTimeMillis() / 100, 20).getFxImage();
+                if (x - speed >= 0) {
+                    newX -= speed;
+                    changeImage(Sprite.movingSprite(Sprite.balloom_left1, Sprite.balloom_left2, Sprite.balloom_left3, (int) System.currentTimeMillis() / 100, 20).getFxImage());
+                } else {
+                    setRandomDirection(); // Immediately change direction if hitting map boundary
+                }
                 break;
             case "RIGHT":
-                newX += speed;
-                img = Sprite.movingSprite(Sprite.balloom_right1, Sprite.balloom_right2, Sprite.balloom_right3, (int) System.currentTimeMillis() / 100, 20).getFxImage();
+                if (x + speed < WIDTH * Sprite.SCALED_SIZE) {
+                    newX += speed;
+                    changeImage(Sprite.movingSprite(Sprite.balloom_right1, Sprite.balloom_right2, Sprite.balloom_right3, (int) System.currentTimeMillis() / 100, 20).getFxImage());
+                } else {
+                    setRandomDirection(); // Immediately change direction if hitting map boundary
+                }
                 break;
         }
 
+        // Check for collisions with walls and bricks
         if (!checkCollision(newX, newY)) {
             x = newX;
             y = newY;
-            moved = true;
-            stuckCounter = 0;
         } else {
-            stuckCounter++;
-            if (stuckCounter >= MAX_STUCK_FRAMES) {
-                setRandomDirection();
-                stuckCounter = 0;
-            }
+            // Immediately change direction upon hitting a wall or brick
+            setRandomDirection();
         }
 
+        // Check collision with Bomber
         Bomber bomber = findBomber();
         if (bomber != null && checkCollisionWithBomber(newX, newY, bomber)) {
             System.out.println("Balloon caught Bomber! Game Over.");
-            // TODO: Thêm logic kết thúc game (ví dụ: dừng timer, hiển thị thông báo)
+            // TODO: Add game over logic (e.g., stop timer, show message)
         }
     }
 
     private Bomber findBomber() {
-        for (Entity entity : game.getEntities()) {
+        for (Entity entity : gameManager.getEntities()) {
             if (entity instanceof Bomber) {
                 return (Bomber) entity;
             }
@@ -85,7 +97,7 @@ public class Balloon extends Entity {
 
     private boolean checkCollision(int newX, int newY) {
         int scaledSize = Sprite.SCALED_SIZE;
-        for (Entity entity : game.getStillObjects()) {
+        for (Entity entity : gameManager.getStillObjects()) {
             if (entity instanceof Wall || entity instanceof Brick) {
                 if (newX < entity.getX() + scaledSize &&
                         newX + scaledSize > entity.getX() &&
