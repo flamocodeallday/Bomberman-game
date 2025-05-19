@@ -17,11 +17,13 @@ public class Bomb extends Entity {
 
     private GameManager game;
     private int animate = 0;
+    private Bomber bomber;
 
-    public Bomb(int xUnit, int yUnit, int power, GameManager game) {
+    public Bomb(int xUnit, int yUnit, int power, GameManager game, Bomber bomber) {
         super(xUnit, yUnit, Sprite.bomb.getFxImage());
         this.game = game;
         this.power = power;
+        this.bomber = bomber;
     }
 
     @Override
@@ -51,10 +53,10 @@ public class Bomb extends Entity {
         int gridY = y / Sprite.SCALED_SIZE;
 
         // Tạo tia lửa cho 4 hướng
-        Flame up = new Flame(gridX, gridY, 0, power, game);
-        Flame down = new Flame(gridX, gridY, 1, power, game);
-        Flame right = new Flame(gridX, gridY, 2, power, game);
-        Flame left = new Flame(gridX, gridY, 3, power, game);
+        Flame up = new Flame(gridX, gridY, 0, power, game, bomber);
+        Flame down = new Flame(gridX, gridY, 1, power, game, bomber);
+        Flame right = new Flame(gridX, gridY, 2, power, game, bomber);
+        Flame left = new Flame(gridX, gridY, 3, power, game, bomber);
 
         // Thêm tia lửa vào danh sách entity
         game.getEntities().add(up);

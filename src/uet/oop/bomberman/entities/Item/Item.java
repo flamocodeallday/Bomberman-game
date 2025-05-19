@@ -41,7 +41,6 @@ public abstract class Item extends Entity {
         gc.drawImage(img, getX(), getY());
     }
 
-
     public abstract void applyEffect(Bomber bomber); // Bomberman sẽ gọi khi đụng vào item
 
 }

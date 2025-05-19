@@ -59,7 +59,7 @@ public class Brick extends Entity {
         Random rand = new Random();
         int chance = rand.nextInt(100); // Xác suất 20%
 
-        if (chance < 90) {
+        if (chance < 40) {
             int ItemX = getX();
             int ItemY = getY();
             int itemType = rand.nextInt(3); // Giả sử có 2 loại item

@@ -7,6 +7,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.stage.Stage;
 import uet.oop.bomberman.Input;
 import uet.oop.bomberman.entities.Bomb.Bomb;
+import uet.oop.bomberman.entities.Bomb.Flame;
 import uet.oop.bomberman.entities.Enemy.Balloon;
 import uet.oop.bomberman.entities.Enemy.Oneal;
 import uet.oop.bomberman.entities.World.*;
@@ -30,6 +31,10 @@ public class GameManager {
 
     private List<Bomb> bombsAdd = new ArrayList<>(); //List trung gian
     private List<Entity> toRemove = new ArrayList<>();
+
+    private Bomber bomberman;
+    private boolean isGameOver = false;
+
 
     //Thêm bomb qua list trung gian để tránh lỗi
     public void addNewBomb(Bomb newBomb) {
@@ -71,14 +76,14 @@ public class GameManager {
 
         timer.start();
         createMap();
-        Entity bomberman = new Bomber(1, 1, Sprite.player_right.getFxImage(), input, this);
+        bomberman = new Bomber(1, 1, Sprite.player_right.getFxImage(), input, this);
         entities.add(bomberman);
     }
 
     public void createMap() {
         try {
             // Adjust the file path to match your system
-            BufferedReader reader = new BufferedReader(new FileReader("C://Users//admin//Downloads//Bomberman-game//res//levels//level1.txt"));
+            BufferedReader reader = new BufferedReader(new FileReader("D:\\Code\\Bomberman-game\\res\\levels\\Level1.txt"));
             String line;
             int j = 0;
 
@@ -139,6 +144,19 @@ public class GameManager {
 
         // Thêm các thực thể mới
         entities.addAll(entitiesToAdd);
+
+        // Kiểm tra va chạm flame với bomber
+        if (bomberman.isAlive()) {
+            for (Entity obj : stillObjects) {
+                if (obj instanceof Flame flame) {
+                    flame.checkCollisionWithBomber(bomberman);
+                }
+            }
+        } else {
+            if (bomberman.isDeathAnimationFinished()) {
+                isGameOver = true;
+            }
+        }
 
         // Xóa các bom đã đánh dấu isRemoved
         entities.removeIf(entity -> entity instanceof Bomb && ((Bomb) entity).isRemoved());

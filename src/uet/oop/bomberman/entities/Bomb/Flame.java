@@ -1,8 +1,8 @@
 package uet.oop.bomberman.entities.Bomb;
 
 import javafx.scene.canvas.GraphicsContext;
-import uet.oop.bomberman.GameEngine.BombermanGame;
 import uet.oop.bomberman.GameEngine.GameManager;
+import uet.oop.bomberman.entities.World.Bomber;
 import uet.oop.bomberman.entities.World.Brick;
 import uet.oop.bomberman.entities.World.Entity;
 import uet.oop.bomberman.entities.World.Wall;
@@ -21,14 +21,16 @@ public class Flame extends Entity {
     private boolean isRemoved = false;
     private static final int FLAME_LIFETIME = 30;
     private GameManager game;
+    private Bomber bomber;
 
-    public Flame(int xUnit, int yUnit, int direction, int length, GameManager game) {
+    public Flame(int xUnit, int yUnit, int direction, int length, GameManager game, Bomber bomber) {
         super(xUnit, yUnit, null);
         this.gridX = xUnit;
         this.gridY = yUnit;
         this.direction = direction;
         this.length = length;
         this.game = game;
+        this.bomber = bomber;
 
         createFlameSegment();
     }
@@ -84,15 +86,35 @@ public class Flame extends Entity {
                 flameSegments.remove(i);  // Xóa segment nếu hết thời gian sống
             }
         }
+        checkCollisionWithBomber(bomber);
     }
 
     public boolean isRemoved() {
         return isRemoved;
     }
-        @Override
+
+    @Override
     public void render(GraphicsContext gc) {
         for (FlameSegments seg : flameSegments) {
             seg.render(gc);
+        }
+    }
+
+    public void checkCollisionWithBomber(Bomber bomber) {
+        if (!bomber.isAlive()) return;
+
+        int bx = bomber.getX() / Sprite.SCALED_SIZE;
+        int by = bomber.getY() / Sprite.SCALED_SIZE;
+
+        for (FlameSegments segment : flameSegments) {
+            int fx = segment.getX() / Sprite.SCALED_SIZE;
+            int fy = segment.getY() / Sprite.SCALED_SIZE;
+
+            if (bx == fx && by == fy) {
+                System.out.println("[DEBUG] COLLISION detected! Killing bomber.");
+                bomber.kill();
+                break;
+            }
         }
     }
 }

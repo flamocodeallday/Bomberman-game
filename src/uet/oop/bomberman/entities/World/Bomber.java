@@ -1,14 +1,20 @@
 package uet.oop.bomberman.entities.World;
 
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import uet.oop.bomberman.GameEngine.BombermanGame;
 import uet.oop.bomberman.GameEngine.GameManager;
 import uet.oop.bomberman.Input;
 import uet.oop.bomberman.entities.Bomb.Bomb;
+import uet.oop.bomberman.entities.Bomb.FlameSegments;
 import uet.oop.bomberman.entities.Item.Item;
 import uet.oop.bomberman.graphics.Sprite;
+import uet.oop.bomberman.entities.Bomb.Flame;
 
 import javafx.geometry.Rectangle2D;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Bomber extends Entity {
     private Input input;
@@ -24,6 +30,29 @@ public class Bomber extends Entity {
     private final long BOMB_APPEAR_DELAY_NS = 200_000_000L; // 200ms
     private boolean hasLeftTile = false;
     private int flameLength = 1;
+    private static final double EPSILON = 0.01;
+    private boolean isAlive = true;
+    private int deathTimer = 60; // Thời gian cho animation chết
+    private int deathFrame = 0;  // Để xác định sprite chết nào đang dùng
+
+    //Item Duration
+    private double defaultSpeed = 1; // Lưu tốc độ mặc định
+    private int defaultMaxBombs = 1; // Lưu số bom mặc định
+    private int defaultFlameLength = 1; // Lưu độ dài ngọn lửa mặc định
+    private static class ItemEffect {
+        String type; // "speed", "bomb", "flame"
+        long startTime; // Thời điểm nhặt vật phẩm
+        long duration; // Thời gian hiệu lực (nanoseconds)
+        ItemEffect(String type, long duration) {
+            this.type = type;
+            this.startTime = System.nanoTime();
+            this.duration = duration;
+        }
+    }
+
+    private List<ItemEffect> activeEffects = new ArrayList<>();
+    private static final long ITEM_DURATION_NS = 5_000_000_000L; // 5 giây
+
 
     public Bomber(int x, int y, Image img, Input input, GameManager game) {
         super(x, y, img);
@@ -35,6 +64,16 @@ public class Bomber extends Entity {
 
     @Override
     public void update() {
+        if (!isAlive) {
+            if (deathTimer > 0) {
+                deathTimer--;
+                if (deathTimer % 20 == 0) {
+                    deathFrame++; // đổi sprite mỗi 20 frame
+                }
+            }
+            return;
+        }
+
         animate();
         move();
         this.x = (int) realX;
@@ -59,7 +98,29 @@ public class Bomber extends Entity {
             }
         }
 
+        updateItemEffects();
+
         checkItemCollision();
+    }
+
+    public void render(GraphicsContext gc) {
+        if (!isAlive) {
+            Image deadSprite;
+            switch (deathFrame) {
+                case 0:
+                    deadSprite = Sprite.player_dead1.getFxImage(); break;
+                case 1:
+                    deadSprite = Sprite.player_dead2.getFxImage(); break;
+                case 2:
+                default:
+                    deadSprite = Sprite.player_dead3.getFxImage(); break;
+            }
+            gc.drawImage(deadSprite, x, y);
+            return;
+        }
+
+        // Bomber đang sống
+        gc.drawImage(img , x, y);
     }
 
     private boolean hasLeftBombTile() {
@@ -165,7 +226,7 @@ public class Bomber extends Entity {
         if (canPlaceBomb()) {
             int bombX = (int) Math.floor((realX + Sprite.SCALED_SIZE / 2) / Sprite.SCALED_SIZE);
             int bombY = (int) Math.floor((realY + Sprite.SCALED_SIZE / 2) / Sprite.SCALED_SIZE);
-            pendingBomb = new Bomb(bombX, bombY, flameLength, game);
+            pendingBomb = new Bomb(bombX, bombY, flameLength, game, this);
             bombPlaced++;
             hasLeftTile = false;
             bombPlaceTime = -1;
@@ -203,23 +264,92 @@ public class Bomber extends Entity {
     public void increaseBombPlace() {
         if(maxBombs < 2) {
             maxBombs += 1;
+            activeEffects.add(new ItemEffect("bomb", ITEM_DURATION_NS));
+        } else {
+            // Đã max, reset thời gian nếu hiệu ứng tồn tại
+            for (ItemEffect effect : activeEffects) {
+                if (effect.type.equals("bomb")) {
+                    effect.startTime = System.nanoTime(); // Reset thời gian
+                    break;
+                }
+            }
         }
     }
 
     public void increaseFlameLength() {
         if(flameLength < 2) {
             flameLength += 1;
+            activeEffects.add(new ItemEffect("flame", ITEM_DURATION_NS));
+        } else {
+            // Đã max, reset thời gian nếu hiệu ứng tồn tại
+            for (ItemEffect effect : activeEffects) {
+                if (effect.type.equals("flame")) {
+                    effect.startTime = System.nanoTime(); // Reset thời gian
+                    break;
+                }
+            }
         }
     }
 
     public void increaseSpeed() {
         if(speed <= 3) {
             speed += 1;
+            activeEffects.add(new ItemEffect("speed", ITEM_DURATION_NS));
+        } else {
+            // Đã max, reset thời gian nếu hiệu ứng tồn tại
+            for (ItemEffect effect : activeEffects) {
+                if (effect.type.equals("speed")) {
+                    effect.startTime = System.nanoTime(); // Reset thời gian
+                    break;
+                }
+            }
         }
     }
 
     private void animate() {
         if (animate < MAX_ANIMATE) animate++;
         else animate = 0;
+    }
+
+    public boolean isAlive() {
+        return isAlive;
+    }
+
+    public Bomber getBomber() {
+        return this;
+    }
+
+    public void kill() {
+        isAlive = false;
+        deathTimer = 60;  // tổng thời gian chết
+        deathFrame = 0;   // bắt đầu từ sprite đầu tiên
+    }
+
+    public boolean isDeathAnimationFinished() {
+        return !isAlive && deathTimer <= 0;
+    }
+
+    private void updateItemEffects() {
+        long currentTime = System.nanoTime();
+        List<ItemEffect> expired = new ArrayList<>();
+
+        for (ItemEffect effect : activeEffects) {
+            if (currentTime - effect.startTime >= effect.duration) {
+                // Hết thời gian, hoàn tác hiệu ứng
+                switch (effect.type) {
+                    case "speed":
+                        speed = defaultSpeed;
+                        break;
+                    case "bomb":
+                        maxBombs = defaultMaxBombs;
+                        break;
+                    case "flame":
+                        flameLength = defaultFlameLength;
+                        break;
+                }
+                expired.add(effect);
+            }
+        }
+        activeEffects.removeAll(expired);
     }
 }
