@@ -2,6 +2,7 @@ package uet.oop.bomberman.entities.Enemy;
 
 import javafx.scene.image.Image;
 import uet.oop.bomberman.GameEngine.GameManager;
+import uet.oop.bomberman.entities.Bomb.Bomb;
 import uet.oop.bomberman.entities.World.Bomber;
 import uet.oop.bomberman.entities.World.Brick;
 import uet.oop.bomberman.entities.World.Entity;
@@ -10,20 +11,20 @@ import uet.oop.bomberman.graphics.Sprite;
 
 import java.util.Random;
 
-public class Oneal extends Entity {
+public class Oneal extends Enemy {
     private final int speed = 1; // Tăng tốc độ để di chuyển mượt hơn
     private String direction; // Hướng di chuyển
     private final Random random = new Random();
     private String mode = "RANDOM"; // Chế độ: "RANDOM" hoặc "CHASE"
-    private static final int CHASE_DISTANCE = 5 * Sprite.SCALED_SIZE; // Ngưỡng khoảng cách để đuổi
+    private static final int CHASE_DISTANCE = 2 * Sprite.SCALED_SIZE; // Ngưỡng khoảng cách để đuổi
     private int stuckCounter = 0; // Đếm số frame bị kẹt
     private static final int MAX_STUCK_FRAMES = 60; // Đổi hướng sau 60 frame nếu bị kẹt
     private GameManager game;
 
     public Oneal(int x, int y, Image img, GameManager game) {
-        super(x, y, img);
-        setRandomDirection();
+        super(x, y, img, game);
         this.game = game;
+        setRandomDirection();
     }
 
     private void setRandomDirection() {
@@ -43,6 +44,11 @@ public class Oneal extends Entity {
             } else {
                 mode = "RANDOM";
             }
+        }
+
+        if (isDeath()) {
+            img = Sprite.oneal_dead.getFxImage();
+            return;
         }
 
         int newX = x;
@@ -178,20 +184,23 @@ public class Oneal extends Entity {
         return null;
     }
 
-    private boolean checkCollision(int newX, int newY) {
-        int scaledSize = Sprite.SCALED_SIZE;
-        for (Entity entity : game.getStillObjects()) {
-            if (entity instanceof Wall || entity instanceof Brick) {
-                if (newX < entity.getX() + scaledSize &&
-                        newX + scaledSize > entity.getX() &&
-                        newY < entity.getY() + scaledSize &&
-                        newY + scaledSize > entity.getY()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+//    private boolean checkCollision(int newX, int newY) {
+//        int scaledSize = Sprite.SCALED_SIZE;
+//
+//        // Kiểm tra va chạm với Wall và Brick
+//        for (Entity entity : game.getStillObjects()) {
+//            if (entity instanceof Wall || entity instanceof Brick) {
+//                if (newX < entity.getX() + scaledSize &&
+//                        newX + scaledSize > entity.getX() &&
+//                        newY < entity.getY() + scaledSize &&
+//                        newY + scaledSize > entity.getY()) {
+//                    return true;
+//                }
+//            }
+//        }
+//
+//        return false;
+//    }
 
     private boolean checkCollisionWithBomber(int newX, int newY, Bomber bomber) {
         int scaledSize = Sprite.SCALED_SIZE;

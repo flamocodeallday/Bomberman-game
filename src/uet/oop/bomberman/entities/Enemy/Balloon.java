@@ -95,20 +95,20 @@ public class Balloon extends Enemy {
         return null;
     }
 
-    private boolean checkCollision(int newX, int newY) {
-        int scaledSize = Sprite.SCALED_SIZE;
-        for (Entity entity : gameManager.getStillObjects()) {
-            if (entity instanceof Wall || entity instanceof Brick) {
-                if (newX < entity.getX() + scaledSize &&
-                        newX + scaledSize > entity.getX() &&
-                        newY < entity.getY() + scaledSize &&
-                        newY + scaledSize > entity.getY()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+//    public boolean checkCollision(int newX, int newY) {
+//        int scaledSize = Sprite.SCALED_SIZE;
+//        for (Entity entity : gameManager.getStillObjects()) {
+//            if (entity instanceof Wall || entity instanceof Brick) {
+//                if (newX < entity.getX() + scaledSize &&
+//                        newX + scaledSize > entity.getX() &&
+//                        newY < entity.getY() + scaledSize &&
+//                        newY + scaledSize > entity.getY()) {
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+//    }
 
     private boolean checkCollisionWithBomber(int newX, int newY, Bomber bomber) {
         int scaledSize = Sprite.SCALED_SIZE;

@@ -37,7 +37,7 @@ public class Flame extends Entity {
 
     private void createFlameSegment() {
         //Flame center
-        flameSegments.add(new FlameSegments(gridX, gridY, -1, false, FLAME_LIFETIME));
+        flameSegments.add(new FlameSegments(gridX, gridY, -1, false, FLAME_LIFETIME, game));
 
         for(int i = 0; i < length; i++){
             boolean isLast = i == (length - 1);
@@ -68,7 +68,7 @@ public class Flame extends Entity {
 
 //            System.out.println("Tạo flame segment tại (" + dx + ", " + dy + ")" + ", isLast = " + isLast);
 
-            flameSegments.add(new FlameSegments(dx , dy , direction, isLast, FLAME_LIFETIME));
+            flameSegments.add(new FlameSegments(dx , dy , direction, isLast, FLAME_LIFETIME, game));
         }
     }
 

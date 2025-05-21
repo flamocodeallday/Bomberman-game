@@ -12,6 +12,7 @@ public abstract class Entity {
 
     //Tọa độ Y tính từ góc trái trên trong Canvas
     protected int y;
+    protected boolean isRemoved = false;
 
     protected Image img;
 
@@ -33,6 +34,14 @@ public abstract class Entity {
     public Rectangle2D getBoundary() {
         return new Rectangle2D(x, y, Sprite.SCALED_SIZE, Sprite.SCALED_SIZE);
     }
+
+    //Kiem tra va cham voi enemy
+    public boolean intersects(Entity other) {
+        return this.getBoundary().intersects(other.getBoundary());
+    }
+
+    public boolean isRemoved() { return isRemoved; }
+
 
     public void render(GraphicsContext gc) {
         gc.drawImage(img, x, y);

@@ -18,7 +18,7 @@ import java.util.List;
 
 public class Bomber extends Entity {
     private Input input;
-    private double speed = 1;
+    private double speed = 1.5;
     private double realX, realY;
     private int animate = 0;
     private final int MAX_ANIMATE = 7500;
@@ -36,7 +36,7 @@ public class Bomber extends Entity {
     private int deathFrame = 0;  // Để xác định sprite chết nào đang dùng
 
     //Item Duration
-    private double defaultSpeed = 1; // Lưu tốc độ mặc định
+    private double defaultSpeed = 1.5; // Lưu tốc độ mặc định
     private int defaultMaxBombs = 1; // Lưu số bom mặc định
     private int defaultFlameLength = 1; // Lưu độ dài ngọn lửa mặc định
     private static class ItemEffect {
@@ -67,7 +67,7 @@ public class Bomber extends Entity {
         if (!isAlive) {
             if (deathTimer > 0) {
                 deathTimer--;
-                if (deathTimer % 20 == 0) {
+                if (deathTimer % 10 == 0) {
                     deathFrame++; // đổi sprite mỗi 20 frame
                 }
             }
@@ -292,8 +292,8 @@ public class Bomber extends Entity {
     }
 
     public void increaseSpeed() {
-        if(speed <= 3) {
-            speed += 1;
+        if(speed <= 2.5) {
+            speed += 0.5;
             activeEffects.add(new ItemEffect("speed", ITEM_DURATION_NS));
         } else {
             // Đã max, reset thời gian nếu hiệu ứng tồn tại

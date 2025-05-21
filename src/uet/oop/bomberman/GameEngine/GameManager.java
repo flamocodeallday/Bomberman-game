@@ -9,6 +9,7 @@ import uet.oop.bomberman.Input;
 import uet.oop.bomberman.entities.Bomb.Bomb;
 import uet.oop.bomberman.entities.Bomb.Flame;
 import uet.oop.bomberman.entities.Enemy.Balloon;
+import uet.oop.bomberman.entities.Enemy.Enemy;
 import uet.oop.bomberman.entities.Enemy.Oneal;
 import uet.oop.bomberman.entities.World.*;
 import uet.oop.bomberman.graphics.Sprite;
@@ -105,9 +106,9 @@ public class GameManager {
                             entities.add(new Balloon(i, j, Sprite.balloom_left1.getFxImage(), this));
                             break;
                         // Uncomment if you want to add Oneal enemies
-                        // case '2':
-                        //     entities.add(new Oneal(i, j, Sprite.oneal_left1.getFxImage(), this));
-                        //     break;
+                         case '2':
+                             entities.add(new Oneal(i, j, Sprite.oneal_left1.getFxImage(), this));
+                             break;
                         // Các ký tự khác chỉ cần Grass (đã được thêm ở trên)
                     }
                 }
@@ -121,31 +122,29 @@ public class GameManager {
     }
 
     public void update() {
+        // 1. Cập nhật tất cả stillObjects (tạo bản sao để tránh ConcurrentModification)
         List<Entity> stillObjectsCopy = new ArrayList<>(stillObjects);
         for (Entity obj : stillObjectsCopy) {
             obj.update();
         }
+
+        // 2. Xóa các stillObjects đã được đánh dấu trong toRemove, sau đó clear danh sách toRemove
         stillObjects.removeAll(toRemove);
         toRemove.clear();
 
-        for (Entity obj : stillObjects) {
-            obj.update();
-        }
-        // Tạo bản sao của entities để lặp
+        // 3. Cập nhật tất cả entities (bản sao)
         List<Entity> entitiesToUpdate = new ArrayList<>(entities);
-        // Tạo danh sách tạm cho các thực thể cần thêm
-        List<Entity> entitiesToAdd = new ArrayList<>(bombsAdd);
-        bombsAdd.clear();
-
-        // Cập nhật tất cả thực thể
         for (Entity entity : entitiesToUpdate) {
             entity.update();
         }
 
-        // Thêm các thực thể mới
-        entities.addAll(entitiesToAdd);
+        // 4. Thêm các bomb mới được thêm vào
+        if (!bombsAdd.isEmpty()) {
+            entities.addAll(bombsAdd);
+            bombsAdd.clear();
+        }
 
-        // Kiểm tra va chạm flame với bomber
+        // 5. Kiểm tra va chạm flame với bomber
         if (bomberman.isAlive()) {
             for (Entity obj : stillObjects) {
                 if (obj instanceof Flame flame) {
@@ -158,9 +157,14 @@ public class GameManager {
             }
         }
 
-        // Xóa các bom đã đánh dấu isRemoved
-        entities.removeIf(entity -> entity instanceof Bomb && ((Bomb) entity).isRemoved());
+        // 6. Xóa các Entity đã đánh dấu isRemoved
+        entities.removeIf(entity ->
+                (entity instanceof Bomb && ((Bomb) entity).isRemoved()) ||
+                        (entity instanceof Enemy && ((Enemy) entity).isRemoved()) ||
+                        (entity instanceof Brick && ((Brick) entity).isRemoved())
+        );
     }
+
 
     public void render() {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());

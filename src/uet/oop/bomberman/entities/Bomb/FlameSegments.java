@@ -1,6 +1,8 @@
 package uet.oop.bomberman.entities.Bomb;
 
 
+import uet.oop.bomberman.GameEngine.GameManager;
+import uet.oop.bomberman.entities.Enemy.Enemy;
 import uet.oop.bomberman.entities.World.Entity;
 import uet.oop.bomberman.graphics.Sprite;
 import javafx.scene.image.Image;
@@ -13,13 +15,16 @@ public class FlameSegments extends Entity {
     private int animate = 0;
     private final int MAX_ANIMATE = 30;
     private int lifeTime;
+    private GameManager game;
 
-    public FlameSegments(int dx, int dy, int direction, boolean isLast, int lifeTime) {
+
+    public FlameSegments(int dx, int dy, int direction, boolean isLast, int lifeTime, GameManager game) {
         super(dx, dy, null);
         this.direction = direction;
         this.isLast = isLast;
         this.lifeTime = lifeTime;
         this.img = getFlameSprite();
+        this.game = game;
     }
 
     @Override
@@ -29,6 +34,16 @@ public class FlameSegments extends Entity {
             animate = 0;
         }
         img = getFlameSprite();
+
+        // Xử lý va chạm với enemy
+        for (Entity e : game.getEntities()) {
+            if (e instanceof Enemy) {
+                Enemy enemy = (Enemy) e;
+                if (enemy.isAlive() && this.intersects(enemy)) {
+                    enemy.die();
+                }
+            }
+        }
 
         // Giảm thời gian sống và xóa nếu hết thời gian
         if (lifeTime > 0) {
