@@ -1,11 +1,14 @@
 package uet.oop.bomberman.GameEngine;
 
 import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import uet.oop.bomberman.Input;
+import uet.oop.bomberman.UI.UIManager;
 import uet.oop.bomberman.entities.Bomb.Bomb;
 import uet.oop.bomberman.entities.Bomb.Flame;
 import uet.oop.bomberman.entities.Enemy.Balloon;
@@ -34,8 +37,34 @@ public class GameManager {
     private List<Entity> toRemove = new ArrayList<>();
 
     private Bomber bomberman;
-    private boolean isGameOver = false;
 
+
+    //TEST
+    private UIManager ui;
+    private Group root;
+    private Stage stage;
+    private AnimationTimer timer;
+    public void setUI(UIManager ui, Group root, Stage stage) {
+        this.ui = ui;
+        this.root = root;
+        this.stage = stage;
+    }
+
+
+    private int currentStage;
+    private static final String[] levels = {"res/levels/Level1.txt", "res/levels/Level2.txt", "res/levels/Level3.txt"};
+
+
+    public AnimationTimer getTimer() {
+        return timer;
+    }
+    public int getCurrentStage() {
+        return currentStage;
+    }
+    public UIManager getUI() {
+        return ui;
+    }
+    //TEST
 
     //Thêm bomb qua list trung gian để tránh lỗi
     public void addNewBomb(Bomb newBomb) {
@@ -64,11 +93,52 @@ public class GameManager {
         canvas = new Canvas(Sprite.SCALED_SIZE * WIDTH, Sprite.SCALED_SIZE * HEIGHT);
         gc = canvas.getGraphicsContext2D();
         root.getChildren().add(canvas);
-
         canvas.requestFocus();
 
-        AnimationTimer timer = new AnimationTimer() {
+        timer = new AnimationTimer() {
             @Override
+            public void handle(long l) {
+               render();
+               update();
+            }
+        };
+        currentStage = 0;
+        timer.start();
+
+        createMap(currentStage);
+        bomberman = new Bomber(1, 1, Sprite.player_right.getFxImage(), input, this);
+        entities.add(bomberman);
+    }
+
+    public void restart(Group root, int currentStage) {
+        canvas = new Canvas(Sprite.SCALED_SIZE * WIDTH, Sprite.SCALED_SIZE * HEIGHT);
+        gc = canvas.getGraphicsContext2D();
+        root.getChildren().add(canvas);
+        canvas.requestFocus();
+
+        timer = new AnimationTimer() {
+            @Override
+            public void handle(long l) {
+                render();
+                update();
+            }
+        };
+        timer.start();
+
+        createMap(currentStage);
+        bomberman = new Bomber(1, 1, Sprite.player_right.getFxImage(), input, this);
+        entities.add(bomberman);
+    }
+
+    public void respawn(Group root, Stage stage) {
+        canvas = new Canvas(Sprite.SCALED_SIZE * WIDTH, Sprite.SCALED_SIZE * HEIGHT);
+        gc = canvas.getGraphicsContext2D();
+        root.getChildren().add(canvas);
+        canvas.requestFocus();
+
+        timer = new AnimationTimer() {
+            @Override
+
             public void handle(long l) {
                 render();
                 update();
@@ -76,18 +146,44 @@ public class GameManager {
         };
 
         timer.start();
-        createMap();
+
         bomberman = new Bomber(1, 1, Sprite.player_right.getFxImage(), input, this);
         entities.add(bomberman);
     }
 
-    public void createMap() {
+    public void nextLevel(Group root, int currentStage) {
+        root.getChildren().clear();
+        currentStage = currentStage + 1;
+        canvas = new Canvas(Sprite.SCALED_SIZE * WIDTH, Sprite.SCALED_SIZE * HEIGHT);
+        gc = canvas.getGraphicsContext2D();
+        root.getChildren().add(canvas);
+        canvas.requestFocus();
+
+        timer = new AnimationTimer() {
+            @Override
+            public void handle(long l) {
+                render();
+                update();
+            }
+        };
+        timer.start();
+        createMap(currentStage);
+        bomberman = new Bomber(1, 1, Sprite.player_right.getFxImage(), input, this);
+        entities.add(bomberman);
+    }
+
+    public void createMap(int currentStage) {
         try {
             // Adjust the file path to match your system
-            BufferedReader reader = new BufferedReader(new FileReader("D:\\Code\\Bomberman-game\\res\\levels\\Level1.txt"));
+            BufferedReader reader = new BufferedReader(new FileReader(levels[currentStage]));
             String line;
             int j = 0;
-
+            if (!stillObjects.isEmpty()) {
+                stillObjects.clear();
+            }
+            if (!entities.isEmpty()) {
+                entities.clear();
+            }
             while ((line = reader.readLine()) != null) {
                 for (int i = 0; i < line.length(); i++) {
                     char c = line.charAt(i);
@@ -103,12 +199,14 @@ public class GameManager {
                             stillObjects.add(new Brick(i, j, Sprite.brick.getFxImage(), this));
                             break;
                         case '1':
-                            entities.add(new Balloon(i, j, Sprite.balloom_left1.getFxImage(), this));
+                            entities.add(new Balloon(i, j, Sprite.balloon_left1.getFxImage(), this));
                             break;
                         // Uncomment if you want to add Oneal enemies
-                         case '2':
+                        case '2':
                              entities.add(new Oneal(i, j, Sprite.oneal_left1.getFxImage(), this));
                              break;
+                        case 'g':
+                            stillObjects.add(new Portal(i, j, Sprite.portal.getFxImage()));
                         // Các ký tự khác chỉ cần Grass (đã được thêm ở trên)
                     }
                 }
@@ -121,8 +219,27 @@ public class GameManager {
         }
     }
 
+    public boolean isWincurrentStage() {
+        for (Entity entity : entities) {
+            if (entity instanceof Enemy) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public Portal getPortal(List<Entity> stillObjects) {
+        for (Entity entity : stillObjects) {
+            if (entity instanceof Portal) {
+                return (Portal) entity;
+            }
+        }
+        return null;
+    }
+
     public void update() {
         // 1. Cập nhật tất cả stillObjects (tạo bản sao để tránh ConcurrentModification)
+
         List<Entity> stillObjectsCopy = new ArrayList<>(stillObjects);
         for (Entity obj : stillObjectsCopy) {
             obj.update();
@@ -153,7 +270,18 @@ public class GameManager {
             }
         } else {
             if (bomberman.isDeathAnimationFinished()) {
-                isGameOver = true;
+
+                //TODO
+                if (timer != null) {
+                    timer.stop();  // Dừng vòng lặp game
+                }
+
+                Platform.runLater(() -> {
+                    root.getChildren().clear();
+                    Pane gameover = ui.createGameoverScreen();
+                    root.getChildren().add(gameover);
+                });
+
             }
         }
 
@@ -163,13 +291,48 @@ public class GameManager {
                         (entity instanceof Enemy && ((Enemy) entity).isRemoved()) ||
                         (entity instanceof Brick && ((Brick) entity).isRemoved())
         );
-    }
 
+        // 7. PAUSE TEST
+        if (input.isEscapeJustPressed()) {
+            if (timer != null) {
+                timer.stop();  // Dừng vòng lặp game
+            }
+            Pane pause = ui.createPauseScreen();
+            root.getChildren().add(pause);
+
+        }
+
+        // 8. NEXT Level TEST
+        if (bomberman.intersects(getPortal(stillObjects))) {
+            if (bomberman.isAlive()) {
+                if (isWincurrentStage()) {
+                    timer.stop();
+                    if (currentStage < 2) {
+                        this.nextLevel(root, currentStage);
+                    } else {
+                        root.getChildren().clear();
+                        Pane win = ui.createVictoryScreen();
+                        root.getChildren().add(win);
+                    }
+                }
+            }
+        }
+    }
 
     public void render() {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         stillObjects.forEach(g -> g.render(gc));
-        entities.forEach(g -> g.render(gc));
+//        entities.forEach(g -> g.render(gc));
+        for (Entity entity : entities) {
+            if (entity instanceof Bomber) {
+                Bomber bomber = (Bomber) entity;
+                if (bomber.isAlive() || !bomber.isDeathAnimationFinished()) {
+                    bomber.render(gc);
+                }
+            } else {
+                entity.render(gc);
+            }
+        }
     }
 
     //Xu ly enemy chet hoac pha brick tao ra portal va itemddd

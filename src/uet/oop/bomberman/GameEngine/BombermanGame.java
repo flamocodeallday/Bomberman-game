@@ -49,8 +49,12 @@ public class BombermanGame extends Application {
         scene.setOnKeyPressed(input::handlePressed);
         scene.setOnKeyReleased(input::handleReleased);
         GameManager game = new GameManager(input);
-        UIManager ui = new UIManager(game);
-        Pane startScreen = ui.createStartScreen(root, stage);
+        UIManager ui = new UIManager(game,root, stage);
+
+        //TEST
+        game.setUI(ui,root,stage);
+
+        Pane startScreen = ui.createStartScreen();
         root.getChildren().add(startScreen);
 
         // Them scene vao stage

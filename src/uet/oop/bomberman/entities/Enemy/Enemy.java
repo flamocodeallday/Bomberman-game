@@ -1,110 +1,165 @@
 package uet.oop.bomberman.entities.Enemy;
 
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import uet.oop.bomberman.GameEngine.BombermanGame;
 import uet.oop.bomberman.GameEngine.GameManager;
-import uet.oop.bomberman.entities.Bomb.Bomb;
-import uet.oop.bomberman.entities.World.Brick;
+import uet.oop.bomberman.entities.World.Bomber;
 import uet.oop.bomberman.entities.World.Entity;
 import uet.oop.bomberman.entities.World.Wall;
+import uet.oop.bomberman.entities.World.Brick;
 import uet.oop.bomberman.graphics.Sprite;
 
+import java.util.Random;
+
 public abstract class Enemy extends Entity {
-    protected int speed;
-    protected GameManager gameManager;
+    protected double speed; // Now a protected field set in subclasses
+    protected GameManager game;
     protected boolean isAlive = true;
-    protected boolean isRemoved = false; //Dung de xoa oneal/cac enemy khac
-    private int deathTimer = 0;
-    private final int DEATH_DELAY = 60; // số frame delay trước khi xóa, tùy chỉnh
+    protected int deathAnimationCount = 30; // Duration of death animation
+    protected int deathFrame = 0; // Current frame of death animation
+    protected int direction; // 0: up, 1: right, 2: down, 3: left
+    protected Random random = new Random();
+    protected int animate = 0;
+    protected final int MAX_ANIMATE = 7500;
 
-
-
-    public Enemy(int x, int y, Image img, GameManager gameManager) {
-        super(x, y, img);
-        this.gameManager = gameManager;
-        this.speed = 1; // Default speed, can be overridden by subclasses
-
+    public Enemy(int xUnit, int yUnit, Image img, GameManager game) {
+        super(xUnit, yUnit, img);
+        this.game = game;
+        this.direction = random.nextInt(4); // Random initial direction
     }
 
-    public abstract void update();
+    @Override
+    public void update() {
+        if (!isAlive) {
+            if (deathAnimationCount > 0) {
+                deathAnimationCount--;
+                if (deathAnimationCount % 10 == 0) {
+                    deathFrame++;
+                }
+            } else {
+                isRemoved = true; // Mark for removal after death animation
+            }
+            return;
+        }
 
-    public void move(int dx, int dy) {
-        x += dx * speed;
-        y += dy * speed;
+        animate();
+        move();
+        checkCollisionWithBomber();
     }
 
-    public GameManager getGameManager() {
-        return gameManager;
+    protected void animate() {
+        if (animate < MAX_ANIMATE) animate++;
+        else animate = 0;
     }
 
-    // Method to change the image
-    protected void changeImage(Image newImg) {
-        this.img = newImg;
+    @Override
+    public void render(GraphicsContext gc) {
+        if (!isAlive) {
+            Image deadSprite = getDeathSprite();
+            gc.drawImage(deadSprite, x, y);
+            return;
+        }
+        gc.drawImage(img, x, y);
     }
 
-    public void takeDamage(int amount) {
-        die();
+    protected abstract Image getDeathSprite(); // Each enemy provides its death animation sprite
+    protected abstract void chooseSprite(); // Each enemy updates its sprite based on direction
+
+    protected void move() {
+        double newX = x;
+        double newY = y;
+
+        switch (direction) {
+            case 0: // Up
+                newY -= speed;
+                break;
+            case 1: // Right
+                newX += speed;
+                break;
+            case 2: // Down
+                newY += speed;
+                break;
+            case 3: // Left
+                newX -= speed;
+                break;
+        }
+
+        if (canMove(newX, newY)) {
+            x = (int) newX;
+            y = (int) newY;
+        } else {
+            direction = random.nextInt(4); // Change direction if collision occurs
+        }
+
+        chooseSprite(); // Update sprite based on direction
     }
 
-    //Logic xu ly giet cac enemy(co the tai su dung)
-    public boolean isAlive() {
-        return isAlive;
+    protected boolean canMove(double newX, double newY) {
+        int size = Sprite.SCALED_SIZE;
+        int buffer = 6;
+
+        double left = newX + buffer;
+        double right = newX + size - buffer - 1;
+        double top = newY + buffer;
+        double bottom = newY + size - buffer - 1;
+
+        int[][] checkUnit = {
+                {(int) (left / size), (int) (top / size)},
+                {(int) (right / size), (int) (top / size)},
+                {(int) (left / size), (int) (bottom / size)},
+                {(int) (right / size), (int) (bottom / size)},
+        };
+
+        for (int[] unit : checkUnit) {
+            int checkX = unit[0];
+            int checkY = unit[1];
+
+            if (checkX < 0 || checkX >= BombermanGame.WIDTH || checkY < 0 || checkY >= BombermanGame.HEIGHT) {
+                return false;
+            }
+
+            for (Entity entity : game.getStillObjects()) {
+                int entityX = entity.getX() / size;
+                int entityY = entity.getY() / size;
+
+                if (entityX == checkX && entityY == checkY &&
+                        (entity instanceof Wall || entity instanceof Brick)) {
+                    double entityLeft = entity.getX();
+                    double entityRight = entity.getX() + size - 1;
+                    double entityTop = entity.getY();
+                    double entityBottom = entity.getY() + size - 1;
+
+                    if (!(right < entityLeft || left > entityRight || bottom < entityTop || top > entityBottom)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
-    public boolean isRemoved() {
-        return isRemoved;
+    protected void checkCollisionWithBomber() {
+        for (Entity entity : game.getEntities()) {
+            if (entity instanceof Bomber) {
+                Bomber bomber = (Bomber) entity;
+                if (bomber.isAlive() && this.intersects(bomber)) {
+                    bomber.kill();
+
+                }
+            }
+        }
     }
 
     public void die() {
         if (isAlive) {
             isAlive = false;
-            deathTimer = DEATH_DELAY;
-            // KHÔNG đánh dấu xóa ngay
+            deathAnimationCount = 30;
+            deathFrame = 0;
         }
     }
 
-    public boolean isDeath() {
-        if (!isAlive) {
-            if (deathTimer > 0) {
-                deathTimer--;
-                return true;  // vẫn đang delay, dừng update tiếp
-            } else {
-                isRemoved = true;
-                gameManager.markForRemoval(this);
-                return true;  // đã đánh dấu xóa, không update nữa
-            }
-        }
-        return false; // chưa chết, tiếp tục update bình thường
-    }
-
-    //Khong cho enemy di vao o chua bomb hoac entity khac
-    //ham kiem tra va cham chung cho tat ca enemy khong di vao cac o co brick wall hoac bomb
-    public boolean checkCollision(int newX, int newY) {
-        int scaledSize = Sprite.SCALED_SIZE;
-
-        // Kiểm tra va chạm với Wall và Brick
-        for (Entity entity : gameManager.getStillObjects()) {
-            if (entity instanceof Wall || entity instanceof Brick) {
-                if (newX < entity.getX() + scaledSize &&
-                        newX + scaledSize > entity.getX() &&
-                        newY < entity.getY() + scaledSize &&
-                        newY + scaledSize > entity.getY()) {
-                    return true;
-                }
-            }
-        }
-
-        // Kiểm tra va chạm với Bomb chưa bị loại bỏ
-        for (Entity entity : gameManager.getEntities()) {
-            if (entity instanceof Bomb && !((Bomb) entity).isRemoved()) {
-                if (newX < entity.getX() + scaledSize &&
-                        newX + scaledSize > entity.getX() &&
-                        newY < entity.getY() + scaledSize &&
-                        newY + scaledSize > entity.getY()) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+    public boolean isAlive() {
+        return isAlive;
     }
 }

@@ -111,7 +111,7 @@ public class Flame extends Entity {
             int fy = segment.getY() / Sprite.SCALED_SIZE;
 
             if (bx == fx && by == fy) {
-                System.out.println("[DEBUG] COLLISION detected! Killing bomber.");
+
                 bomber.kill();
                 break;
             }

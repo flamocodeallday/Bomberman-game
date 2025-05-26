@@ -72,6 +72,8 @@ public class Bomber extends Entity {
                 }
             }
             return;
+
+
         }
 
         animate();
