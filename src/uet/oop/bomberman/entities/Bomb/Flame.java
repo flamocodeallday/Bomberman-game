@@ -102,18 +102,12 @@ public class Flame extends Entity {
     public void checkCollisionWithBomber(Bomber bomber) {
         if (!bomber.isAlive()) return;
 
-        int bx = bomber.getX() / Sprite.SCALED_SIZE;
-        int by = bomber.getY() / Sprite.SCALED_SIZE;
-
         for (FlameSegments segment : flameSegments) {
-            int fx = segment.getX() / Sprite.SCALED_SIZE;
-            int fy = segment.getY() / Sprite.SCALED_SIZE;
-
-            if (bx == fx && by == fy) {
-
+            if (bomber.intersects(segment)) {
                 bomber.kill();
                 break;
             }
         }
     }
+
 }

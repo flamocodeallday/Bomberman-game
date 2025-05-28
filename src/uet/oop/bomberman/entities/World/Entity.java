@@ -32,12 +32,26 @@ public abstract class Entity {
     }
 
     public Rectangle2D getBoundary() {
-        return new Rectangle2D(x, y, Sprite.SCALED_SIZE, Sprite.SCALED_SIZE);
+        final int offset = 6; // Điều chỉnh: giảm hitbox mỗi chiều 6 pixel (tùy chỉnh được)
+        return new Rectangle2D(
+                x + offset / 2.0,
+                y + offset / 2.0,
+                Sprite.SCALED_SIZE - offset,
+                Sprite.SCALED_SIZE - offset
+        );
     }
+
 
     //Kiem tra va cham voi enemy
     public boolean intersects(Entity other) {
-        return this.getBoundary().intersects(other.getBoundary());
+        // Tính tâm đối tượng
+        int thisTileX = (int)((this.x + Sprite.SCALED_SIZE / 2) / Sprite.SCALED_SIZE);
+        int thisTileY = (int)((this.y + Sprite.SCALED_SIZE / 2) / Sprite.SCALED_SIZE);
+
+        int otherTileX = (int)((other.x + Sprite.SCALED_SIZE / 2) / Sprite.SCALED_SIZE);
+        int otherTileY = (int)((other.y + Sprite.SCALED_SIZE / 2) / Sprite.SCALED_SIZE);
+
+        return (thisTileX == otherTileX) && (thisTileY == otherTileY);
     }
 
     public boolean isRemoved() { return isRemoved; }
