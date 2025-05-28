@@ -6,7 +6,6 @@ import javafx.geometry.Pos;
 
 import javafx.scene.Cursor;
 import javafx.scene.Group;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -19,22 +18,16 @@ import uet.oop.bomberman.GameEngine.GameManager;
 import uet.oop.bomberman.Sound.SoundBack;
 import uet.oop.bomberman.graphics.Sprite;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import static uet.oop.bomberman.GameEngine.BombermanGame.HEIGHT;
 import static uet.oop.bomberman.GameEngine.BombermanGame.WIDTH;
 
 public class UIManager {
     // Trong class UIScreenManager hoặc class chứa createStartScreen(...)
-    public static SoundBack backgroundMusic = new SoundBack("/HUD/backgroundmusic.mp3");
+    public static SoundBack backgroundMusic = new SoundBack("/sound/backgroundmusic.mp3");
     private GameManager gameManager;
     private AnimationTimer timer;
-
-    // TEST
     private Group root;
     private Stage stage;
-    // TEST
     public final Font bricksanFont = Font.loadFont(getClass().getResourceAsStream("/HUD/Brickshapers.ttf"), 60);
 
     public UIManager(GameManager gameManager, Group root, Stage stage) {
@@ -43,6 +36,7 @@ public class UIManager {
         this.stage = stage;
     }
 
+    /** START SCREEN.*/
     public Pane createStartScreen() {
         Pane startScreen = new Pane();
 
@@ -161,6 +155,7 @@ public class UIManager {
         return startScreen;
     }
 
+    /** SETTING SCREEN. */
     public Pane createSettingsScreen() {
         Pane settingsScreen = new Pane();
 
@@ -225,6 +220,7 @@ public class UIManager {
         return settingsScreen;
     }
 
+    /** GAMEOVER SCREEN. */
     public Pane createGameoverScreen()  {
         Pane gameoverScreen = new Pane();
         Image gameoverImage = new Image(getClass().getResourceAsStream("/HUD/newGO.png"));
@@ -292,6 +288,7 @@ public class UIManager {
         return gameoverScreen;
     }
 
+    /** PAUSE SCREEN. */
     public Pane createPauseScreen() {
         Pane pauseScreen = new Pane();
 
@@ -398,6 +395,7 @@ public class UIManager {
         return pauseScreen;
     }
 
+    /** VICTORY SCREEN. */
     public Pane createVictoryScreen() {
         Pane winScreen = new Pane();
 

@@ -6,7 +6,7 @@ import java.net.URL;
 
 public class SoundEffect {
     private Media media;
-    private static boolean isOn = true; // Global toggle for all sound effects
+    private static boolean isOn = true;
 
     public SoundEffect(String resourcePath) {
         try {
@@ -28,7 +28,8 @@ public class SoundEffect {
         }
         try {
             MediaPlayer mediaPlayer = new MediaPlayer(media);
-            mediaPlayer.setOnEndOfMedia(() -> mediaPlayer.dispose()); // Clean up after playing
+            mediaPlayer.setOnEndOfMedia(() -> mediaPlayer.dispose());
+            mediaPlayer.setVolume(0.9);
             mediaPlayer.play();
         } catch (Exception e) {
             System.out.println("Lỗi khi phát âm thanh");
@@ -36,11 +37,4 @@ public class SoundEffect {
         }
     }
 
-    public static void toggle() {
-        isOn = !isOn;
-    }
-
-    public static boolean isOn() {
-        return isOn;
-    }
 }

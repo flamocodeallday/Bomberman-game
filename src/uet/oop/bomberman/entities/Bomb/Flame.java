@@ -17,7 +17,6 @@ public class Flame extends Entity {
     private int length;
     private List<FlameSegments> flameSegments = new ArrayList<>();
     private int gridX, gridY;
-    private int timeToLive = 30;
     private boolean isRemoved = false;
     private static final int FLAME_LIFETIME = 30;
     private GameManager game;

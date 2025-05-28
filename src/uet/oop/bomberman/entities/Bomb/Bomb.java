@@ -2,7 +2,7 @@ package uet.oop.bomberman.entities.Bomb;
 
 import uet.oop.bomberman.GameEngine.GameManager;
 import uet.oop.bomberman.entities.World.Entity;
-import uet.oop.bomberman.GameEngine.BombermanGame;
+
 import uet.oop.bomberman.graphics.Sprite;
 import uet.oop.bomberman.entities.World.Bomber;
 import javafx.scene.canvas.GraphicsContext;

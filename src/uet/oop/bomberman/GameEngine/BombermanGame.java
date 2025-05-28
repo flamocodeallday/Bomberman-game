@@ -6,6 +6,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import uet.oop.bomberman.Input;
@@ -36,33 +37,19 @@ public class BombermanGame extends Application {
 
     @Override
     public void start(Stage stage) {
-
-
-        // Tao root container
         Group root = new Group();
-
-        // Tao scene
         Scene scene = new Scene(root);
         stage.setScene(scene);
-
+        stage.setTitle("Bomberman");
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/HUD/icon.png")));
         Input input = new Input();
         scene.setOnKeyPressed(input::handlePressed);
         scene.setOnKeyReleased(input::handleReleased);
         GameManager game = new GameManager(input);
         UIManager ui = new UIManager(game,root, stage);
-
-        //TEST
         game.setUI(ui,root,stage);
-
         Pane startScreen = ui.createStartScreen();
         root.getChildren().add(startScreen);
-
-        // Them scene vao stage
-
         stage.show();
-
-
     }
-
-
 }

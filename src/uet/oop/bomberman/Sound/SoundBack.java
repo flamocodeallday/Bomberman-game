@@ -18,9 +18,10 @@ public class SoundBack {
                 return;
             }
 
-            Media media = new Media(resource.toURI().toString()); // ✅ Đúng định dạng URI
+            Media media = new Media(resource.toURI().toString());
             mediaPlayer = new MediaPlayer(media);
-            mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE); // lặp lại
+            mediaPlayer.setVolume(0.4);
+            mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -47,12 +48,5 @@ public class SoundBack {
         }
     }
 
-    public boolean isOn() {
-        return isOn;
-    }
-
-    public boolean isPlaying() {
-        return mediaPlayer != null && mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING;
-    }
 
 }

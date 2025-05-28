@@ -38,8 +38,6 @@ public class GameManager {
 
     private Bomber bomberman;
 
-
-    //TEST
     private UIManager ui;
     private Group root;
     private Stage stage;
@@ -49,8 +47,6 @@ public class GameManager {
         this.root = root;
         this.stage = stage;
     }
-
-
     private int currentStage;
     private static final String[] levels = {"res/levels/Level1.txt", "res/levels/Level2.txt", "res/levels/Level3.txt"};
 
@@ -64,7 +60,6 @@ public class GameManager {
     public UIManager getUI() {
         return ui;
     }
-    //TEST
 
     //Thêm bomb qua list trung gian để tránh lỗi
     public void addNewBomb(Bomb newBomb) {
@@ -94,7 +89,6 @@ public class GameManager {
         gc = canvas.getGraphicsContext2D();
         root.getChildren().add(canvas);
         canvas.requestFocus();
-
         timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
@@ -110,6 +104,7 @@ public class GameManager {
         entities.add(bomberman);
     }
 
+    /** RESTART MAN CHOI HIEN TAI. */
     public void restart(Group root, int currentStage) {
         canvas = new Canvas(Sprite.SCALED_SIZE * WIDTH, Sprite.SCALED_SIZE * HEIGHT);
         gc = canvas.getGraphicsContext2D();
@@ -130,6 +125,7 @@ public class GameManager {
         entities.add(bomberman);
     }
 
+    /** HOI SINH BOMMBERMAN. */
     public void respawn(Group root, Stage stage) {
         canvas = new Canvas(Sprite.SCALED_SIZE * WIDTH, Sprite.SCALED_SIZE * HEIGHT);
         gc = canvas.getGraphicsContext2D();
@@ -151,6 +147,7 @@ public class GameManager {
         entities.add(bomberman);
     }
 
+    /** CHUYEN SANG MAN CHOI TIEP THEO. */
     public void nextLevel(Group root, int currentStage) {
         root.getChildren().clear();
         canvas = new Canvas(Sprite.SCALED_SIZE * WIDTH, Sprite.SCALED_SIZE * HEIGHT);
@@ -171,6 +168,7 @@ public class GameManager {
         entities.add(bomberman);
     }
 
+    /** TAO MAP DUA TREN CURRENT STAGE. */
     public void createMap(int currentStage) {
         try {
             // Adjust the file path to match your system
@@ -218,6 +216,7 @@ public class GameManager {
         }
     }
 
+    /** KIEM TRA XEM DA THANG MAN CHOI CHUA (CHECK XEM CON ENEMY KHONG). */
     public boolean isWincurrentStage() {
         for (Entity entity : entities) {
             if (entity instanceof Enemy) {
@@ -227,6 +226,7 @@ public class GameManager {
         return true;
     }
 
+    /** lAY CONG. */
     public Portal getPortal(List<Entity> stillObjects) {
         for (Entity entity : stillObjects) {
             if (entity instanceof Portal) {
@@ -269,8 +269,6 @@ public class GameManager {
             }
         } else {
             if (bomberman.isDeathAnimationFinished()) {
-
-                //TODO
                 if (timer != null) {
                     timer.stop();  // Dừng vòng lặp game
                 }
@@ -291,7 +289,7 @@ public class GameManager {
                         (entity instanceof Brick && ((Brick) entity).isRemoved())
         );
 
-        // 7. PAUSE TEST
+        // 7. PAUSE
         if (input.isEscapeJustPressed()) {
             if (timer != null) {
                 timer.stop();  // Dừng vòng lặp game
@@ -301,18 +299,24 @@ public class GameManager {
 
         }
 
-        // 8. NEXT Level TEST
+        // 8. NEXT LEVEL
         if (bomberman.intersects(getPortal(stillObjects))) {
             if (bomberman.isAlive()) {
                 if (isWincurrentStage()) {
                     timer.stop();
                     currentStage += 1;
                     if (currentStage <= 2) {
-                        this.nextLevel(root, currentStage);
+                        Platform.runLater(() -> {
+                            this.nextLevel(root, currentStage);
+                        });
+
                     } else {
-                        root.getChildren().clear();
-                        Pane win = ui.createVictoryScreen();
-                        root.getChildren().add(win);
+                        Platform.runLater(() -> {
+                            root.getChildren().clear();
+                            Pane win = ui.createVictoryScreen();
+                            root.getChildren().add(win);
+                        });
+
                     }
                 }
             }
@@ -322,7 +326,6 @@ public class GameManager {
     public void render() {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         stillObjects.forEach(g -> g.render(gc));
-//        entities.forEach(g -> g.render(gc));
         for (Entity entity : entities) {
             if (entity instanceof Bomber) {
                 Bomber bomber = (Bomber) entity;
