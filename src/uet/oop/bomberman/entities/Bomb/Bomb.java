@@ -6,11 +6,11 @@ import uet.oop.bomberman.GameEngine.BombermanGame;
 import uet.oop.bomberman.graphics.Sprite;
 import uet.oop.bomberman.entities.World.Bomber;
 import javafx.scene.canvas.GraphicsContext;
-
+import uet.oop.bomberman.Sound.SoundEffect; // Added import for SoundEffect
 
 public class Bomb extends Entity {
     private int countDown = 90;
-    private int postExplosion= 30;
+    private int postExplosion = 30;
     private boolean exploded = false;
     private int power;
     private boolean isRemoved = false; // Thêm thuộc tính để đánh dấu xóa
@@ -28,18 +28,17 @@ public class Bomb extends Entity {
 
     @Override
     public void update() {
-        if(!exploded) {
+        if (!exploded) {
             countDown--;
-            if(countDown <= 0) {
+            if (countDown <= 0) {
                 explode();
             } else {
                 animate();
                 img = Sprite.movingSprite(Sprite.bomb, Sprite.bomb_1, Sprite.bomb_2, animate, 60).getFxImage();
-
             }
         } else {
             postExplosion--;
-            if(postExplosion <= 0) {
+            if (postExplosion <= 0) {
                 isRemoved = true;
             }
         }
@@ -48,6 +47,7 @@ public class Bomb extends Entity {
     public void explode() {
         exploded = true;
         img = Sprite.bomb_exploded.getFxImage();
+        new SoundEffect("/sound/bomb_explodes.wav").play(); // Updated to use classpath-relative path
 
         int gridX = x / Sprite.SCALED_SIZE;
         int gridY = y / Sprite.SCALED_SIZE;

@@ -98,8 +98,8 @@ public class GameManager {
         timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
-               render();
-               update();
+                render();
+                update();
             }
         };
         currentStage = 0;
@@ -153,7 +153,6 @@ public class GameManager {
 
     public void nextLevel(Group root, int currentStage) {
         root.getChildren().clear();
-        currentStage = currentStage + 1;
         canvas = new Canvas(Sprite.SCALED_SIZE * WIDTH, Sprite.SCALED_SIZE * HEIGHT);
         gc = canvas.getGraphicsContext2D();
         root.getChildren().add(canvas);
@@ -203,11 +202,11 @@ public class GameManager {
                             break;
                         // Uncomment if you want to add Oneal enemies
                         case '2':
-                             entities.add(new Oneal(i, j, Sprite.oneal_left1.getFxImage(), this));
-                             break;
+                            entities.add(new Oneal(i, j, Sprite.oneal_left1.getFxImage(), this));
+                            break;
                         case 'g':
                             stillObjects.add(new Portal(i, j, Sprite.portal.getFxImage()));
-                        // Các ký tự khác chỉ cần Grass (đã được thêm ở trên)
+                            // Các ký tự khác chỉ cần Grass (đã được thêm ở trên)
                     }
                 }
                 j++;
@@ -307,7 +306,8 @@ public class GameManager {
             if (bomberman.isAlive()) {
                 if (isWincurrentStage()) {
                     timer.stop();
-                    if (currentStage < 2) {
+                    currentStage += 1;
+                    if (currentStage <= 2) {
                         this.nextLevel(root, currentStage);
                     } else {
                         root.getChildren().clear();

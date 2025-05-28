@@ -4,6 +4,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import uet.oop.bomberman.GameEngine.BombermanGame;
 import uet.oop.bomberman.GameEngine.GameManager;
+import uet.oop.bomberman.Sound.SoundEffect;
 import uet.oop.bomberman.entities.World.Bomber;
 import uet.oop.bomberman.entities.World.Entity;
 import uet.oop.bomberman.entities.World.Wall;
@@ -156,6 +157,7 @@ public abstract class Enemy extends Entity {
             isAlive = false;
             deathAnimationCount = 30;
             deathFrame = 0;
+            new SoundEffect("/sound/enemy_dies.wav").play();
         }
     }
 
